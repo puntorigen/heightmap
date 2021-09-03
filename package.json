@@ -1,0 +1,52 @@
+{
+  "private": true,
+  "name": "heightmap",
+  "version": "0.0.1",
+  "description": "NodeJS package for creating a heightmap image and bounding box for any lat/lng free.",
+  "keywords": [
+    "heightmap",
+    "puntorigen",
+    "terrain"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "author": "Pablo Schaffner",
+  "homepage": "http://github.com/puntorigen/heightmap.git",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/puntorigen/heightmap.git"
+  },
+  "bugs": {
+    "mail": "pablo@puntorigen.com",
+    "url": "http://github.com/puntorigen/heightmap/issues"
+  },
+  "main": "lib/index.js",
+  "bin": {
+    "heightmap": "bin/cli",
+    "create_heightmap": "bin/cli"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development rollup -c",
+    "build": "cross-env NODE_ENV=production rollup -c && npm run docs",
+    "docs": "jsdoc2md -t README.hbs src/*.js > README.md"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "geolib": "^3.3.1",
+    "mri": "^1.1.6",
+    "open_console": "github:puntorigen4u/console"
+  },
+  "devDependencies": {
+    "@ampproject/rollup-plugin-closure-compiler": "^0.26.0",
+    "@babel/core": "^7.11.4",
+    "@babel/preset-env": "^7.11.0",
+    "@rollup/plugin-babel": "^5.2.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "cross-env": "^7.0.2",
+    "jsdoc-to-markdown": "^7.0.1",
+    "rollup": "^2.26.5",
+    "rollup-plugin-copy-assets": "^2.0.3"
+  },
+  "scarfSettings": {
+    "enabled": false
+  }
+}

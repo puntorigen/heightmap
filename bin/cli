@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+process.env.UV_THREADPOOL_SIZE=8*require('os').cpus().length;
+//const cli = require('command-line-args');
+const open_console = require('open_console');
+const pkg = require('../package.json');
+const heightmap = require('../lib/index');
+const mri = require('mri');
+let myArgs = mri(process.argv, {
+    alias: {
+        lat: ['lat','latitude'],
+        lng: ['lng','longitude'],
+        precision: ['precision','sample_every','step'],
+        distance: ['distance','horizon','radio'],
+        file: ['f','output-file'],
+        help: ['h','help']
+    },
+    boolean: [],
+    default: {
+        precision:200,
+        distance:20
+    }
+});
+delete myArgs._;
+if (myArgs.cpu) {
+    process.env.UV_THREADPOOL_SIZE=8*parseFloat(myArgs.cpu);
+    delete myArgs.cpu;
+}
+
+/* */
+(async () => {
+    // testing code here
+    //let file = (myArgs.length>0)?myArgs[0]:'vn.dsl';
+    //let debug = (myArgs.length>1)?eval(myArgs[1].trim()):false;
+    let x_console = new open_console();
+    x_console.title({ title:`Heightmap generator v${pkg.version}`, titleColor:'brightYellow', color:'green' });
+    //
+    let exists = async function(dir_or_file) {
+        let fs = require('fs').promises;
+        try {
+            await fs.access(dir_or_file);
+            return true;
+        } catch(e) {
+            return false;
+        }
+    }
+    //
+    let printUsage = function() {
+        x_console.out({ message:'Usage:', color:'cyan' });
+        x_console.out({ message:'heightmap [options]', color:'yellow' });
+        console.log('');
+        //if (myArgs.help) {
+            x_console.out({ message:'Options:', color:'brightCyan' });
+            x_console.out({ message:'--lat, --latitude \t\t(required) target latitude', color:'cyan' });
+            x_console.out({ message:'--lng, --longitude\t\t\t(required) target longitude', color:'cyan' });
+            x_console.out({ message:'--precision, --step\t\t\tdistance between each point in the mesh-grid (default: 200 meters)', color:'cyan' });
+            x_console.out({ message:'--distance, --radio\t\t\tdistance away from target lat/lng to get the heightmap (default: 20 km)', color:'cyan' });
+            x_console.out({ message:'--file, --output-file\t\t\toptional output file (png format)', color:'cyan' });
+            x_console.out({ message:'-h, --help\t\t\tthis console output', color:'cyan' });
+            console.log('');
+        //}
+        //copyright
+        x_console.out({ message:`Copyright © 2021, Pablo Schaffner. All rights reserved.`, color:'dim' });
+    };
+    if (myArgs.help || !myArgs.src) {
+        printUsage();
+    } else {
+        if (myArgs.lat && myArgs.lng) {
+            let base = new heightmap(myArgs);
+            await base.process();
+            console.log('total time passed, since constructor: '+base.secsPassed_());
+        } else {
+            console.log('--lat and --lng are required!')
+            printUsage();
+        }
+    }
+})().catch(err => {
+    console.error(err);
+});
+/* */
