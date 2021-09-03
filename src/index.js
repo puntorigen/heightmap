@@ -66,15 +66,56 @@ export default class heightmap {
 
     async getElevation(grid2d) {
         //step 4
-        
+        //transform grid2d array into single array (flat)
+        const axios = require('axios');
+        let bak = JSON.parse(JSON.stringify(grid2d)); //make a clone
+        // 3-sep-21 it seems its too large to send everything...
+        /* let grid1d = [].concat.apply([], grid2d);
+        let data = { "locations":grid1d };
+        let elevation = await axios.post('https://api.open-elevation.com/api/v1/lookup', data, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });*/
+        //requesting each row elevation ...
+        let service = 'https://api.open-elevation.com/api/v1/lookup';
+        let config = {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        };
+        let parallel = [];
+        for (let row in grid2d) {
+            let data = { "locations":grid2d[row] };
+            //console.log('requesting row:'+(row+1)+' of '+grid2d.length);
+            let elevation = axios.post(service,data,config);
+            parallel.push(elevation);
+            //grid2d[row] = elevation.data.results;
+            //break;
+        }
+        let callthem = await Promise.all(parallel);
+        // assign results
+        for (let row in callthem) {
+            grid2d[row] = callthem[row].data.results;
+        }
+        //
+        //console.log('total_records',total_records.length);
+        return grid2d;
     }
 
     async runTest() {
+        let time_start = process.hrtime();
         this.config.lat = -33.391202;
         this.config.lng = -70.542715;
         let box = await map.getBoundingBox();
         console.log(box);
         let mesh = await map.get2D_meshgrid(box);
+        let elev = await this.getElevation(mesh);
+        console.log('elev',elev[0]);
+        let time_end = process.hrtime(time_start);
+        console.info('Execution time (hr): %ds %dms', time_end[0], time_end[1] / 1000000);
         //console.log('mesh',mesh);
     }
 
