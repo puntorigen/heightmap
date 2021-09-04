@@ -1,7 +1,7 @@
 # Punto Origen OPEN Framework : Heightmap Package
 
 # API Reference
-Heightmap: A class for freely creating a heightmap from a given latitude/longitude point, precision sample and horizon distance.
+Heightmap: A class for freely creating a heightmap from a given latitude/longitude point, pixel_size sample and horizon distance.
 
 
 * * *

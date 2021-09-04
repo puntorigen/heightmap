@@ -9,7 +9,7 @@ let myArgs = mri(process.argv, {
     alias: {
         lat: ['lat','latitude'],
         lng: ['lng','longitude'],
-        precision: ['precision','sample_every','step'],
+        pixel_size: ['pixel_size','sample_every','step'],
         distance: ['distance','horizon','radio'],
         file: ['f','output-file'],
         help: ['h','help']
@@ -52,7 +52,7 @@ if (myArgs.cpu) {
             x_console.out({ message:'Options:', color:'brightCyan' });
             x_console.out({ message:'--lat, --latitude \t\t(required) target latitude', color:'cyan' });
             x_console.out({ message:'--lng, --longitude\t\t\t(required) target longitude', color:'cyan' });
-            x_console.out({ message:'--precision, --step\t\t\tdistance between each point in the mesh-grid (default: 200 meters)', color:'cyan' });
+            x_console.out({ message:'--pixel_size, --step\t\t\tsize of each point in the mesh-grid (default: 200 meters)', color:'cyan' });
             x_console.out({ message:'--distance, --radio\t\t\tdistance away from target lat/lng to get the heightmap (default: 20 km)', color:'cyan' });
             x_console.out({ message:'--file, --output-file\t\t\toptional output file (png format)', color:'cyan' });
             x_console.out({ message:'-h, --help\t\t\tthis console output', color:'cyan' });

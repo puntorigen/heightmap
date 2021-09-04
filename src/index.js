@@ -1,5 +1,5 @@
 /**
- * Heightmap: A class for freely creating a heightmap from a given latitude/longitude point, precision sample and horizon distance.
+ * Heightmap: A class for freely creating a heightmap from a given latitude/longitude point, pixel_size sample and horizon distance.
  * @name 	heightmap
  * @module 	heightmap
  **/
@@ -10,7 +10,7 @@ export default class heightmap {
         let defaults = {
             lat: -1,
             lng: -1,
-            precision: 200,
+            pixel_size: 200,
             distance: 20
         };
         this.config = {...defaults, ...config };
@@ -42,26 +42,52 @@ export default class heightmap {
         //step 2
         const geolib = require('geolib');
         let distance = geolib.getDistance(box.topLeft,box.topRight); //in mts
-        return Math.ceil(distance/this.config.precision); //meters for each step
+        return Math.ceil(distance/this.config.pixel_size); //meters for each step
     }
 
-    async get2D_meshgrid(box) {
+    async get2D_meshgrid(box,tiles=false) {
         //step 3
+        //also added 'tiles' option, in case you wish to grab a map layer (ex streetmap, cloud map, etc)
+        const coord = require('coordinates2tile');
         const geolib = require('geolib');
         let steps = await this.getStepValue(box);
-        let array2D = [];
+        let resp = { array2D:[], tiles:[] };
+        let tiles_pos = { x:0, y:0 };
+        let tiles_keys = {};
         let range = Array(steps).fill(0);
         for (let y in range) {
-            let row = [];
-            let row_position = geolib.computeDestinationPoint(box.topLeft,this.config.precision*y,180);
+            let row = [], row_tile = [];
+            let row_position = geolib.computeDestinationPoint(box.topLeft,this.config.pixel_size*y,180);
             for (let x in range) {
-                let tmp = geolib.computeDestinationPoint(row_position,this.config.precision*x,90);
+                let tmp = geolib.computeDestinationPoint(row_position,this.config.pixel_size*x,90);
+                if (tiles) {
+                    let tile_tmp = {
+                        z:12,  //zoom 1-18 (amount of detail, more better the quality)
+                        x:coord.lat2tile(tmp.latitude,12),
+                        y:coord.long2tile(tmp.longitude,12),
+                        pos_x:tiles_pos.x,
+                        pos_y:tiles_pos.y
+                    };
+                    if (tiles_keys[`${tile_tmp.x}-${tile_tmp.y}`] === undefined) {
+                        // only append different tiles
+                        tiles_keys[`${tile_tmp.x}-${tile_tmp.y}`] = 1;
+                        row_tile.push(tile_tmp);
+                        tiles_pos.x += 1;
+                    }
+                }
                 row.push(tmp);
             }
-            array2D.push(row);
+            resp.array2D.push(row);
+            if (tiles) {
+                if (row_tile.length>0) {
+                    resp.tiles.push(row_tile);
+                    tiles_pos.y += 1;
+                }
+            }
         }
-        console.log('debug:',{ steps, rows:array2D.length, cols:array2D[0].length });
-        return array2D;
+        console.log('debug:',{ steps, rows:resp.array2D.length, cols:resp.array2D[0].length });
+        if (!tiles) delete resp.tiles;        
+        return resp;
     }
 
     async getElevation(grid2d) {
@@ -112,8 +138,9 @@ export default class heightmap {
         let box = await map.getBoundingBox();
         console.log(box);
         let mesh = await map.get2D_meshgrid(box);
-        let elev = await this.getElevation(mesh);
+        let elev = await this.getElevation(mesh.array2D);
         console.log('elev',elev[0]);
+        if (mesh.tiles) console.log('row tiles',mesh.tiles);
         let time_end = process.hrtime(time_start);
         console.info('Execution time (hr): %ds %dms', time_end[0], time_end[1] / 1000000);
         //console.log('mesh',mesh);
