@@ -121,7 +121,7 @@ export default class heightmap {
         }
         return resp;
     }
-
+    /*
     async renderTiles(tiles,url='https://s3.amazonaws.com/elevation-tiles-prod/normal/{z}/{x}/{y}.png') {
         //step 4, option 2, step 2
         //given a tile server url, render the given tiles object, return an image
@@ -158,7 +158,7 @@ export default class heightmap {
         await fs.writeFile('test.png',Buffer(map64,'base64'));
         console.log('base64 map',map64);
         return renderObj;
-    }
+    }*/
 
     async getElevation(meshgrid) {
         //step 4
@@ -195,24 +195,34 @@ export default class heightmap {
         //step1: get boundingbox from polygon
         const geolib = require('geolib');
         const bounds = geolib.getBounds(polygonArray);
+        console.log('bounds',bounds);
         //step2: get steps value between points
         const width_mt = geolib.getDistance({ latitude:bounds.minLat, longitude:bounds.minLng },
                                             { latitude:bounds.maxLat, longitude:bounds.maxLng });
-        const steps = Math.ceil(width_mt/distance); //amount of steps
+                                            
+        console.log('width_in_meters',width_mt);
+        const points_per_row = Math.ceil(width_mt/distance); //amount of steps
+        console.log('steps in width',points_per_row);
         //step2: create grid points separated within the specified distance
         //step3: at same time, check which points are within the original polygon
         let grid = [];
-        let range = Array(steps).fill(0);
+        let pointInPolygon = require('point-in-polygon');
+        let range = Array(points_per_row).fill(0);
         for (let y in range) {
             let row = [];
-            let row_position = geolib.computeDestinationPoint({ latitude:bounds.minLat, longitude:bounds.minLng },distance*y,180);
+            let row_position = geolib.computeDestinationPoint({ latitude:bounds.maxLat, longitude:bounds.maxLng },distance*y,180);
             for (let x in range) {
                 let tmp = geolib.computeDestinationPoint(row_position,distance*x,90);
-                if (geolib.isPointInPolygon(tmp, polygonArray)) { //step3
-                    row.push(tmp);
-                }
+                //let test = geolib.isPointInPolygon(tmp, polygonArray);
+                //console.log('testing point within polygon',{ row:row_position, test,tmp });
+                row.push(tmp);
+                //if (test) { //step3
+                    //console.log('point within polygon',tmp);
+                //}
             }
-            grid.push(row);
+            if (row.length>0) {
+                grid.push(row);
+            }
         }
         // return grid
         return grid;
@@ -230,7 +240,7 @@ export default class heightmap {
         //console.log('elev',elev[0]);
         //option 2
         let tiles = await this.getTiles(mesh);
-        let tiles_test = await this.renderTiles(tiles);
+        //let tiles_test = await this.renderTiles(tiles);
         //console.log('row tiles with url',tiles_test);
         //end
         let time_end = process.hrtime(time_start);
