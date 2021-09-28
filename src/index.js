@@ -187,7 +187,7 @@ export default class heightmap {
         return meshgrid;
     }
 
-    async getMeshgridWithinPolygon(polygonArray,distance=30) {
+    getMeshgridWithinPolygon(polygonArray,distance=30) {
         //distance is in meters, polygonArray format:
         /*
         [

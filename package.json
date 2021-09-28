@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "heightmap",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "NodeJS package for creating a heightmap image and bounding box for any lat/lng free.",
   "keywords": [
     "heightmap",
