@@ -206,7 +206,7 @@ export default class heightmap {
         //step2: create grid points separated within the specified distance
         //step3: at same time, check which points are within the original polygon
         let grid = [];
-        let pointInPolygon = require('point-in-polygon');
+        //let pointInPolygon = require('point-in-polygon');
         let range = Array(points_per_row).fill(0);
         for (let y in range) {
             let row = [];
