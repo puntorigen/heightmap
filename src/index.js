@@ -188,44 +188,48 @@ export default class heightmap {
     }
 
     getMeshgridWithinPolygon(polygonArray,distance=30) {
-        //distance is in meters, polygonArray format:
+        //distance is in meters, polygonArray format (or GeoJSON):
         /*
         [{ latitude: 52.516272, longitude: 13.377722 },{ latitude: 51.515, longitude: 7.453619 },{ latitude: 51.503333, longitude: -0.119722 }]
         */
-        //step1: get boundingbox from polygon
-        const geolib = require('geolib');
-        const bounds = geolib.getBounds(polygonArray);
-        console.log('bounds',bounds);
-        //step2: get steps value between points
-        const width_mt = geolib.getDistance({ latitude:bounds.minLat, longitude:bounds.minLng },
-                                            { latitude:bounds.maxLat, longitude:bounds.maxLng });
-                                            
-        console.log('width_in_meters',width_mt);
-        const points_per_row = Math.ceil(width_mt/distance); //amount of steps
-        console.log('steps in width',points_per_row);
-        //step2: create grid points separated within the specified distance
-        //step3: at same time, check which points are within the original polygon
-        let grid = [];
-        //let pointInPolygon = require('point-in-polygon');
-        let range = Array(points_per_row).fill(0);
-        for (let y in range) {
-            let row = [];
-            let row_position = geolib.computeDestinationPoint({ latitude:bounds.maxLat, longitude:bounds.maxLng },distance*y,180);
-            for (let x in range) {
-                let tmp = geolib.computeDestinationPoint(row_position,distance*x,90);
-                //let test = geolib.isPointInPolygon(tmp, polygonArray);
-                //console.log('testing point within polygon',{ row:row_position, test,tmp });
-                row.push(tmp);
-                //if (test) { //step3
-                    //console.log('point within polygon',tmp);
-                //}
+        let polygonAsGeoJson = {};
+        if (polygonArray.type) {
+            polygonAsGeoJson = polygonArray; // added support for polygonArray as GeoJSON
+        } else {
+            let transformedPolygon = [];
+            for (let point of polygonArray) {
+                transformedPolygon.push([ point.longitude,point.latitude ]);
             }
-            if (row.length>0) {
-                grid.push(row);
+            //repeat first item as last, to close polygon
+            if (transformedPolygon[0]!=transformedPolygon[transformedPolygon.length-1]) {
+                transformedPolygon.push([ polygonArray[0].longitude,polygonArray[0].latitude ]);
             }
+            polygonAsGeoJson = {
+                "type": "FeatureCollection",
+                "features": [{
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [transformedPolygon]
+                    }
+                }]
+            };
         }
+        let turf = require('@turf/turf');
+        let caja = turf.bbox(polygonAsGeoJson);
+        let area = turf.area(polygonAsGeoJson.features[0].geometry);
+        let grid = turf.pointGrid(caja, (distance>999)?1000/distance:1/distance, { mask:polygonAsGeoJson.features[0].geometry });
+        //console.log('area de poligono (en hectareas)',{ hectareas:area/10000, metros:area });
+        //console.log('cantidad de equipos',grid.features.length);
         // return grid
-        return grid;
+        return { grid, area };
+    }
+
+    testPolyGrid() {
+        let poly = [{ latitude: 52.516272, longitude: 13.377722 },{ latitude: 51.515, longitude: 7.453619 },{ latitude: 51.503333, longitude: -0.119722 }];
+        let test = this.getMeshgridWithinPolygon(poly,1000);
+        return test;
     }
 
     async runTest() {

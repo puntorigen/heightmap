@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "heightmap",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "NodeJS package for creating a heightmap image and bounding box for any lat/lng free.",
   "keywords": [
     "heightmap",
@@ -30,13 +30,16 @@
     "docs": "jsdoc2md -t README.hbs src/*.js > README.md"
   },
   "dependencies": {
+    "@turf/turf": "^6.5.0",
     "axios": "^0.21.1",
     "coordinates2tile": "^0.0.2",
     "geolib": "^3.3.1",
     "images": "^3.2.3",
     "merge-images": "^2.0.0",
     "mri": "^1.1.6",
-    "open_console": "github:puntorigen4u/console"
+    "open_console": "github:puntorigen4u/console",
+    "point-in-polygon": "^1.1.0",
+    "turf": "^3.0.14"
   },
   "devDependencies": {
     "@ampproject/rollup-plugin-closure-compiler": "^0.26.0",
