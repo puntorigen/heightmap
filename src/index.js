@@ -223,7 +223,7 @@ export default class heightmap {
         //console.log('area de poligono (en hectareas)',{ hectareas:area/10000, metros:area });
         //console.log('cantidad de equipos',grid.features.length);
         // return grid
-        return { grid, area };
+        return { grid, area, amount:grid.features.length };
     }
 
     testPolyGrid() {
