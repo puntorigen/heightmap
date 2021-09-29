@@ -219,7 +219,7 @@ export default class heightmap {
         let turf = require('@turf/turf');
         let caja = turf.bbox(polygonAsGeoJson);
         let area = turf.area(polygonAsGeoJson.features[0].geometry);
-        let grid = turf.pointGrid(caja, (distance>999)?1000/distance:1/distance, { mask:polygonAsGeoJson.features[0].geometry });
+        let grid = turf.pointGrid(caja, distance/1000, { mask:polygonAsGeoJson.features[0].geometry });
         //console.log('area de poligono (en hectareas)',{ hectareas:area/10000, metros:area });
         //console.log('cantidad de equipos',grid.features.length);
         // return grid
